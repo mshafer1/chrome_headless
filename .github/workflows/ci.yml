@@ -22,6 +22,10 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
+      - name: Fetch current versions
+        run: |
+          docker pull --all-tags ${{ vars.DOCKER_USERNAME }}/headless_chrome
+      
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
@@ -39,16 +43,17 @@ jobs:
           context: .
           push: false
           tags: dev/chrome:latest , ${{ steps.meta.outputs.tags }}
-      - name: Tag with chrome version
+      - name: Tag with chrome version and conditionally push
         id: chrome_version
         run: |
           echo "${{ steps.meta.outputs.tags }}"
           chrome_version=`docker run --rm dev/chrome /bin/sh -c "google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-"`
           docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
           major_chrome_version=`echo ${chrome_version} | cut -d'.' -f1`
-          docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
-          docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${major_chrome_version}
-          docker image ls
-      - name: Push to dockerhub
-        run: |
-          docker image push --all-tags ${{ vars.DOCKER_USERNAME }}/headless_chrome
+          if [[ docker image ls | grep -q "chrome_${chrome_version}" ]]; then
+            echo "Version ${chrome_version} already pushed"
+          else
+            docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
+            docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${major_chrome_version}
+            docker image push --all-tags ${{ vars.DOCKER_USERNAME }}/headless_chrome
+          fi
