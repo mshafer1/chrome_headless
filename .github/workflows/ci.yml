@@ -39,7 +39,7 @@ jobs:
           context: .
           push: false
           tags: dev/chrome:latest , ${{ steps.meta.outputs.tags }}
-      - name: Get chrome version
+      - name: Tag with chrome version
         id: chrome_version
         run: |
           echo "${{ steps.meta.outputs.tags }}"
@@ -49,4 +49,6 @@ jobs:
           docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
           docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${major_chrome_version}
           docker image ls
+      - name: Push to dockerhub
+        run: |
           docker image push --all-tags ${{ vars.DOCKER_USERNAME }}/headless_chrome
