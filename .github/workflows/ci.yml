@@ -65,7 +65,10 @@ jobs:
           echo current sha is $current_sha
           echo $sha_tags | sed -e 's/ /\n/g' | grep -v "${current_sha}" | xargs --no-run-if-empty docker rmi
 
+          printf "\n\nRemaining image tags:"
           docker image ls
+
+          printf "\n\n"
 
           if [[ $(docker image ls | grep -c "chrome_${chrome_version}") -gt 0 ]]; then
             echo "Version ${chrome_version} already pushed"
