@@ -46,14 +46,26 @@ jobs:
       - name: Tag with chrome version and conditionally push
         id: chrome_version
         run: |
-          echo "${{ steps.meta.outputs.tags }}"
           chrome_version=`docker run --rm dev/chrome /bin/sh -c "google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-"`
           docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
           major_chrome_version=`echo ${chrome_version} | cut -d'.' -f1`
-          if [[ $(docker image ls | grep -c "chrome_${chrome_version}") -gt 0 ]]; then
-            echo "Version ${chrome_version} already pushed"
-          else
-            docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
-            docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${major_chrome_version}
-            docker image push --all-tags ${{ vars.DOCKER_USERNAME }}/headless_chrome
-          fi
+
+          current_versions=`docker images --format "{{.Repository}}:{{.Tag}}" | grep mshafer1/headless_chrome`
+
+          # remove other chrome verisons
+          echo $current_versions |  sed -e 's/ /\n/g' | grep 'chrome_' | grep -v chrome_${major_chrome_version} | xargs docker rmi
+
+          # remove other sha tags
+          sha_tags=`echo $current_versions |  sed -e 's/ /\n/g' | grep 'sha-'`
+          current_sha=`echo "${{ steps.meta.outputs.tags }}" | grep sha`
+          echo $sha_tags | sed -e 's/ /\n/g' | grep '${current_sha}' | xargs docker rmi
+
+          docker image ls
+
+          # if [[ $(docker image ls | grep -c "chrome_${chrome_version}") -gt 0 ]]; then
+          #   echo "Version ${chrome_version} already pushed"
+          # else
+          #   docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
+          #   docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${major_chrome_version}
+          #   docker image push --all-tags ${{ vars.DOCKER_USERNAME }}/headless_chrome
+          # fi
