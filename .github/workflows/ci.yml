@@ -53,12 +53,13 @@ jobs:
           current_versions=`docker images --format "{{.Repository}}:{{.Tag}}" | grep mshafer1/headless_chrome`
 
           # remove other chrome verisons
-          echo $current_versions |  sed -e 's/ /\n/g' | grep 'chrome_' | grep -v chrome_${major_chrome_version} | xargs docker rmi
+          echo $current_versions |  sed -e 's/ /\n/g' | grep 'chrome_' | grep -v chrome_${major_chrome_version} | xargs --no-run-if-empty docker rmi
 
           # remove other sha tags
           sha_tags=`echo $current_versions |  sed -e 's/ /\n/g' | grep 'sha-'`
           current_sha=`echo "${{ steps.meta.outputs.tags }}" | grep sha`
-          echo $sha_tags | sed -e 's/ /\n/g' | grep '${current_sha}' | xargs docker rmi
+          echo current sha is $current_sha
+          echo $sha_tags | sed -e 's/ /\n/g' | grep -v '${current_sha}' | xargs --no-run-if-empty docker rmi
 
           docker image ls
 
