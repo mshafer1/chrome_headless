@@ -50,7 +50,7 @@ jobs:
           chrome_version=`docker run --rm dev/chrome /bin/sh -c "google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-"`
           docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
           major_chrome_version=`echo ${chrome_version} | cut -d'.' -f1`
-          if [[ `docker image ls | grep -q "chrome_${chrome_version}"` ]]; then
+          if [[ $(docker image ls | grep -c "chrome_${chrome_version}") -eq 1 ]]; then
             echo "Version ${chrome_version} already pushed"
           else
             docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
