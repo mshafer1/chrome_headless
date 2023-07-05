@@ -60,8 +60,8 @@ jobs:
           echo $current_versions |  sed -e 's/ /\n/g' | grep 'chrome_' | grep -v chrome_${major_chrome_version} | xargs --no-run-if-empty docker rmi
 
           # remove other sha tags
-          sha_tags=`echo $current_versions |  sed -e 's/ /\n/g' | grep 'sha-'`
-          current_sha=`echo "${{ steps.meta.outputs.tags }}" | sed -e 's/ /\n/g' | grep sha`
+          sha_tags=`echo $current_versions |  sed -e 's/ /\n/g' | grep ':sha-'`
+          current_sha=`echo "${{ steps.meta.outputs.tags }}" | sed -e 's/ /\n/g' | grep :sha-`
           echo current sha is $current_sha
           echo $sha_tags | sed -e 's/ /\n/g' | grep -v '${current_sha}' | xargs --no-run-if-empty docker rmi
 
