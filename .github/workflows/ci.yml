@@ -35,5 +35,5 @@ jobs:
       - name: Get chrome version
         id: chrome_version
         run: |
-          docker run --rm dev/chrome "google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-3"
+          docker run --rm dev/chrome /bin/sh -c "google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-3"
         
