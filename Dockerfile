@@ -19,10 +19,6 @@ RUN chmod 777 /tmp
 
 # RUN chmod -R o+rX /sys/devices
 RUN mkdir -p /tmp/chrome && chmod 777 /tmp/chrome
-RUN useradd -u 1000 chrome_user \
-    && mkdir -p /home/chrome_user \
-    && chmod -R 777 /home/chrome_user \
-    && chown -R chrome_user:chrome_user /home/chrome_user
 
-WORKDIR /home/chrome_user
-USER chrome_user
+
+WORKDIR /tmp/chrome
