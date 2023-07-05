@@ -42,5 +42,6 @@ jobs:
         run: |
           echo "${{ steps.meta.outputs.tags }}"
           chrome_version=`docker run --rm dev/chrome /bin/sh -c "google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-"`
-          docker tag dev/chrome:latest mshafer1/headless_chrome:chrome_${chrome_version}
+          docker tag dev/chrome:latest ${{ vars.DOCKER_USERNAME }}/headless_chrome:chrome_${chrome_version}
           docker image ls
+          docker image push --all-tags ${{ vars.DOCKER_USERNAME }}/headless_chrome
