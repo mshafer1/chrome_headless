@@ -10,10 +10,31 @@ RUN wget https://dl.google.com/linux/direct/${chrome_deb} && apt-get install ./$
 
 ENV DRIVER_BIN=/usr/bin/chromedriver
 
-RUN export chrome_version=$(google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-3 ); export driver_version=$(curl https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${chrome_version}); wget https://chromedriver.storage.googleapis.com/${driver_version}/chromedriver_linux64.zip; unzip chromedriver_linux64.zip; mv chromedriver ${DRIVER_BIN}; chown root:root ${DRIVER_BIN}; chmod +x ${DRIVER_BIN}
+FROM base as chrome_driver
+
+RUN google-chrome --version
+
+RUN apt-get install jq -y
+
+RUN google-chrome --version | sed -r 's/^.+Chrome //g' | tr -d '\n' | tr -d ' ' | cut -d'.' -f1-3 > chrome_version.txt
+
+RUN curl https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json | jq '.' | tee chrome_versions.json
+
+RUN export chrome_version=$( cat chrome_version.txt ); cat chrome_versions.json | jq -r --arg jq_chrome_version "${chrome_version}" '.channels[] | select(.version | startswith($jq_chrome_version)) |.downloads.chromedriver[] | select(.platform=="linux64").url' > chrome_download.url
+
+RUN echo $( cat chrome_download.url )
+RUN wget $( cat chrome_download.url )
+
+RUN unzip chromedriver-linux64.zip
+RUN mv chromedriver-linux64/LICENSE.chromedriver ${DRIVER_BIN}.LICENSE
+RUN mv chromedriver-linux64/chromedriver ${DRIVER_BIN}
+RUN chown root:root ${DRIVER_BIN}
+RUN chmod +x ${DRIVER_BIN}
 
 
 FROM base AS app
+
+COPY --from=chrome_driver ${DRIVER_BIN} ${DRIVER_BIN}
 
 RUN chmod 777 /tmp
 
